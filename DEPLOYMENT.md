@@ -19,7 +19,8 @@ I have already prepared the project for deployment:
     *   **Framework Preset**: Select `Vite`.
     *   **Root Directory**: Leave as `./` (default).
     *   **Build & Development Settings**:
-        *   **Build Command**: `cd client && npm install && npm run build`
+        *   **Build Command**: `npm run build`
+            > ⚠️ **Important**: Copy ONLY the text inside the code block. Do NOT copy the backticks (`) or quotes.
         *   **Output Directory**: `client/dist`
         *   **Install Command**: `npm install`
 4.  **Environment Variables**:
