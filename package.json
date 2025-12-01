@@ -1,0 +1,29 @@
+{
+  "name": "job-matcher",
+  "version": "1.0.0",
+  "description": "AI-powered job matching application using SerpAPI and NLP",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "jobs",
+    "matching",
+    "nlp",
+    "serpapi"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "multer": "^1.4.5-lts.1",
+    "natural": "^6.10.0",
+    "openai": "^4.20.1",
+    "pdfjs-dist": "^5.4.449"
+  }
+}
