@@ -27,7 +27,12 @@ if (!global.Path2D) {
   global.Path2D = class Path2D { constructor() {} };
 }
 
-const pdfParse = require('pdf-parse');
+const pdfParseModule = require('pdf-parse');
+// Handle potential CJS/ESM interop issues
+const pdfParse = pdfParseModule.default || pdfParseModule;
+
+console.log('PDF Parse Module Type:', typeof pdfParseModule);
+console.log('PDF Parse Function Type:', typeof pdfParse);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
