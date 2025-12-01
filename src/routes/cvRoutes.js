@@ -9,61 +9,19 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import pdfParse from 'pdf-parse';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const router = express.Router();
-
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || file.mimetype === 'text/plain') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF and TXT files are allowed'));
-    }
-  }
-});
-
-// In-memory CV storage (for simplicity)
-// In production, use a database or session storage
-let storedCV = null;
+// ... imports ...
 
 /**
- * Extract text from PDF buffer using PDF.js
+ * Extract text from PDF buffer using pdf-parse
  */
 async function extractTextFromPDF(buffer) {
   try {
-    // Disable worker to avoid canvas dependency in Node.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-
-    const loadingTask = pdfjsLib.getDocument({
-      data: new Uint8Array(buffer),
-      useSystemFonts: true,
-      disableFontFace: true, // Disable font loading to avoid canvas dependency
-      isEvalSupported: false // Disable eval for security
-    });
-    
-    const pdf = await loadingTask.promise;
-    let fullText = '';
-
-    // Extract text from each page
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      fullText += pageText + '\n';
-    }
-
-    return fullText.trim();
+    const data = await pdfParse(buffer);
+    return data.text.trim();
   } catch (error) {
-    console.error('PDF.js extraction error:', error);
+    console.error('PDF parsing error:', error);
     throw new Error('Failed to extract text from PDF');
   }
 }
