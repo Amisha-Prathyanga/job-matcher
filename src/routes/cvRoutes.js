@@ -7,68 +7,6 @@ import express from 'express';
 import { cleanCVText, validateCV, extractSkills } from '../services/cvService.js';
 import fs from 'fs/promises';
 import path from 'path';
-import { fileURLToPath } from 'url';
-import multer from 'multer';
-import { createRequire } from 'module';
-const require = createRequire(import.meta.url);
-
-// Polyfill for Vercel serverless environment
-if (!global.DOMMatrix) {
-  global.DOMMatrix = class DOMMatrix {
-    constructor() {
-      this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
-    }
-  };
-}
-if (!global.ImageData) {
-  global.ImageData = class ImageData { constructor() {} };
-}
-if (!global.Path2D) {
-  global.Path2D = class Path2D { constructor() {} };
-}
-
-const pdfParseModule = require('pdf-parse');
-// Handle potential CJS/ESM interop issues
-const pdfParse = pdfParseModule.default || pdfParseModule;
-
-console.log('PDF Parse Module Type:', typeof pdfParseModule);
-console.log('PDF Parse Function Type:', typeof pdfParse);
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const router = express.Router();
-
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype === 'application/pdf' || file.mimetype === 'text/plain') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF and TXT files are allowed'));
-    }
-  }
-});
-
-// In-memory CV storage (for simplicity)
-// In production, use a database or session storage
-let storedCV = null;
-async function extractTextFromPDF(buffer) {
-  try {
-    const data = await pdfParse(buffer);
-    return data.text.trim();
-  } catch (error) {
-    console.error('PDF parsing error:', error);
-    throw new Error('Failed to extract text from PDF');
-  }
-}
-
-/**
- * POST /api/cv
  * Upload CV text or file (PDF/TXT)
  */
 router.post('/', upload.single('cvFile'), async (req, res) => {
