@@ -42,7 +42,9 @@ let storedCV = null;
 async function extractTextFromPDF(buffer) {
   try {
     console.log('Starting PDF extraction with unpdf...');
-    const { text } = await extractText(buffer);
+    // Convert Buffer to Uint8Array as required by unpdf
+    const uint8Array = new Uint8Array(buffer);
+    const { text } = await extractText(uint8Array);
     console.log('PDF extraction successful, length:', text.length);
     return text.trim();
   } catch (error) {
