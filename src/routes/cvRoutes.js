@@ -11,6 +11,22 @@ import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
+
+// Polyfill for Vercel serverless environment
+if (!global.DOMMatrix) {
+  global.DOMMatrix = class DOMMatrix {
+    constructor() {
+      this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
+    }
+  };
+}
+if (!global.ImageData) {
+  global.ImageData = class ImageData { constructor() {} };
+}
+if (!global.Path2D) {
+  global.Path2D = class Path2D { constructor() {} };
+}
+
 const pdfParse = require('pdf-parse');
 
 const __filename = fileURLToPath(import.meta.url);
