@@ -40,9 +40,14 @@ let storedCV = null;
  */
 async function extractTextFromPDF(buffer) {
   try {
+    // Disable worker to avoid canvas dependency in Node.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+
     const loadingTask = pdfjsLib.getDocument({
       data: new Uint8Array(buffer),
       useSystemFonts: true,
+      disableFontFace: true, // Disable font loading to avoid canvas dependency
+      isEvalSupported: false // Disable eval for security
     });
     
     const pdf = await loadingTask.promise;
