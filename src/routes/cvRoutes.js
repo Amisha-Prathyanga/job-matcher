@@ -29,7 +29,9 @@ if (!global.Path2D) {
 }
 
 // Import PDF.js using CommonJS to avoid ESM issues in Vercel
-const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+// const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
+const pdfParseModule = require('pdf-parse');
+const pdfParse = pdfParseModule.default || pdfParseModule;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -55,35 +57,17 @@ const upload = multer({
 let storedCV = null;
 
 /**
- * Extract text from PDF buffer using PDF.js
+ * Extract text from PDF buffer using pdf-parse
  */
 async function extractTextFromPDF(buffer) {
   try {
-    // Disable worker to avoid canvas dependency in Node.js
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '';
-
-    const loadingTask = pdfjsLib.getDocument({
-      data: new Uint8Array(buffer),
-      useSystemFonts: true,
-      disableFontFace: true, // Disable font loading to avoid canvas dependency
-      isEvalSupported: false // Disable eval for security
-    });
-    
-    const pdf = await loadingTask.promise;
-    let fullText = '';
-
-    // Extract text from each page
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map(item => item.str).join(' ');
-      fullText += pageText + '\n';
-    }
-
-    return fullText.trim();
+    console.log('Starting PDF extraction with pdf-parse...');
+    const data = await pdfParse(buffer);
+    console.log('PDF extraction successful, length:', data.text.length);
+    return data.text.trim();
   } catch (error) {
-    console.error('PDF.js extraction error:', error);
-    throw new Error('Failed to extract text from PDF');
+    console.error('PDF extraction error details:', error);
+    throw new Error(`Failed to extract text from PDF: ${error.message}`);
   }
 }
 
