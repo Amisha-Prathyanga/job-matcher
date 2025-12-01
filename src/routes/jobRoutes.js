@@ -90,26 +90,33 @@ router.get('/search', async (req, res) => {
 /**
  * POST /api/match
  * Match jobs with uploaded CV
- * Body: { jobs (optional) }
+ * Body: { jobs, cvText (optional) }
  */
 router.post('/match', async (req, res) => {
   try {
-    // Get stored CV
-    const cvData = getStoredCV();
-    if (!cvData) {
+    const { jobs, cvText } = req.body;
+
+    if (!jobs || !Array.isArray(jobs)) {
       return res.status(400).json({
         success: false,
-        error: 'Please upload a CV first using POST /api/cv'
+        error: 'Jobs array is required'
       });
     }
 
-    // Get jobs from request body or use cached jobs
-    let jobs = req.body.jobs || cachedJobs;
+    // Get CV from request body or fallback to stored CV
+    let cvData = null;
+    if (cvText) {
+      // Use CV text from request
+      cvData = { text: cvText };
+    } else {
+      // Fallback to stored CV (for backward compatibility)
+      cvData = getStoredCV();
+    }
 
-    if (!jobs || jobs.length === 0) {
+    if (!cvData || !cvData.text) {
       return res.status(400).json({
         success: false,
-        error: 'No jobs to match. Please search for jobs first using GET /api/search'
+        error: 'Please upload a CV first using POST /api/cv'
       });
     }
 

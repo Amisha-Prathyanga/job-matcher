@@ -38,6 +38,11 @@ const CVUpload = ({ onCVUploaded }) => {
         text: response.data.message + ` Found ${response.data.data.skills.length} skills.` 
       });
       
+      // Store CV text in localStorage for persistence
+      if (response.data.data.text) {
+        localStorage.setItem('cvText', response.data.data.text);
+      }
+      
       if (onCVUploaded) {
         onCVUploaded(response.data.data);
       }

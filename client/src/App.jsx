@@ -7,6 +7,7 @@ import ThemeToggle from './components/ThemeToggle';
 
 function App() {
   const [cvUploaded, setCvUploaded] = useState(false);
+  const [cvData, setCvData] = useState(null); // Store CV data
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -24,11 +25,14 @@ function App() {
     setIsDark(!isDark);
   };
 
-  const handleCVUploaded = (cvData) => {
+  const handleCVUploaded = (uploadedCvData) => {
     setCvUploaded(true);
+    setCvData(uploadedCvData); // Store CV data in state
+    // Also store in localStorage as backup
+    localStorage.setItem('cvData', JSON.stringify(uploadedCvData));
     setMessage({
       type: 'success',
-      text: `CV uploaded! Found skills: ${cvData.skills.slice(0, 5).join(', ')}${cvData.skills.length > 5 ? '...' : ''}`
+      text: `CV uploaded! Found skills: ${uploadedCvData.skills.slice(0, 5).join(', ')}${uploadedCvData.skills.length > 5 ? '...' : ''}`
     });
   };
 
@@ -37,7 +41,7 @@ function App() {
   };
 
   const handleMatch = async () => {
-    if (!cvUploaded) {
+    if (!cvUploaded || !cvData) {
       setMessage({
         type: 'error',
         text: 'Please upload your CV first!'
@@ -57,7 +61,11 @@ function App() {
     setMessage(null);
 
     try {
-      const response = await axios.post('/api/match', { jobs });
+      // Send CV text along with jobs for matching
+      const response = await axios.post('/api/match', { 
+        jobs,
+        cvText: cvData.text || localStorage.getItem('cvText') // Send CV text
+      });
       
       setJobs(response.data.data.jobs);
       setMessage({
