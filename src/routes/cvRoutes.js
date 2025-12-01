@@ -10,9 +10,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import multer from 'multer';
 import { createRequire } from 'module';
-
 const require = createRequire(import.meta.url);
-const PDFParser = require('pdf2json');
+const { extractText } = require('unpdf');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,47 +37,18 @@ const upload = multer({
 let storedCV = null;
 
 /**
- * Extract text from PDF buffer using pdf2json
+ * Extract text from PDF buffer using unpdf
  */
 async function extractTextFromPDF(buffer) {
-  return new Promise((resolve, reject) => {
-    const pdfParser = new PDFParser();
-    
-    pdfParser.on('pdfParser_dataError', (errData) => {
-      console.error('PDF parsing error:', errData.parserError);
-      reject(new Error(`Failed to parse PDF: ${errData.parserError}`));
-    });
-    
-    pdfParser.on('pdfParser_dataReady', (pdfData) => {
-      try {
-        // Extract text from all pages
-        let fullText = '';
-        if (pdfData.Pages) {
-          pdfData.Pages.forEach(page => {
-            if (page.Texts) {
-              page.Texts.forEach(text => {
-                if (text.R) {
-                  text.R.forEach(r => {
-                    if (r.T) {
-                      fullText += decodeURIComponent(r.T) + ' ';
-                    }
-                  });
-                }
-              });
-              fullText += '\n';
-            }
-          });
-        }
-        console.log('PDF extraction successful, length:', fullText.length);
-        resolve(fullText.trim());
-      } catch (error) {
-        console.error('Text extraction error:', error);
-        reject(new Error(`Failed to extract text: ${error.message}`));
-      }
-    });
-    
-    pdfParser.parseBuffer(buffer);
-  });
+  try {
+    console.log('Starting PDF extraction with unpdf...');
+    const { text } = await extractText(buffer);
+    console.log('PDF extraction successful, length:', text.length);
+    return text.trim();
+  } catch (error) {
+    console.error('PDF extraction error:', error);
+    throw new Error(`Failed to extract text from PDF: ${error.message}`);
+  }
 }
 
 /**
