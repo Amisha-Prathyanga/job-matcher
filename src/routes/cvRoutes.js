@@ -44,7 +44,24 @@ async function extractTextFromPDF(buffer) {
     console.log('Starting PDF extraction with unpdf...');
     // Convert Buffer to Uint8Array as required by unpdf
     const uint8Array = new Uint8Array(buffer);
-    const { text } = await extractText(uint8Array);
+    const result = await extractText(uint8Array);
+    console.log('PDF extraction result type:', typeof result);
+    console.log('PDF extraction result:', JSON.stringify(result).substring(0, 200));
+    
+    // Handle different return formats
+    let text = '';
+    if (typeof result === 'string') {
+      text = result;
+    } else if (result && typeof result.text === 'string') {
+      text = result.text;
+    } else if (result && Array.isArray(result.pages)) {
+      // Some libraries return pages array
+      text = result.pages.map(p => p.text || '').join('\n');
+    } else if (typeof result === 'object') {
+      // Try to extract text from object
+      text = JSON.stringify(result);
+    }
+    
     console.log('PDF extraction successful, length:', text.length);
     return text.trim();
   } catch (error) {
