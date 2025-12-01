@@ -12,26 +12,7 @@ import multer from 'multer';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
-
-// Polyfill for Vercel serverless environment
-if (!global.DOMMatrix) {
-  global.DOMMatrix = class DOMMatrix {
-    constructor() {
-      this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
-    }
-  };
-}
-if (!global.ImageData) {
-  global.ImageData = class ImageData { constructor() {} };
-}
-if (!global.Path2D) {
-  global.Path2D = class Path2D { constructor() {} };
-}
-
-// Import PDF.js using CommonJS to avoid ESM issues in Vercel
-// const pdfjsLib = require('pdfjs-dist/legacy/build/pdf.js');
-const pdfParseModule = require('pdf-parse');
-const pdfParse = pdfParseModule.default || pdfParseModule;
+const PDFParser = require('pdf2json');
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -57,18 +38,47 @@ const upload = multer({
 let storedCV = null;
 
 /**
- * Extract text from PDF buffer using pdf-parse
+ * Extract text from PDF buffer using pdf2json
  */
 async function extractTextFromPDF(buffer) {
-  try {
-    console.log('Starting PDF extraction with pdf-parse...');
-    const data = await pdfParse(buffer);
-    console.log('PDF extraction successful, length:', data.text.length);
-    return data.text.trim();
-  } catch (error) {
-    console.error('PDF extraction error details:', error);
-    throw new Error(`Failed to extract text from PDF: ${error.message}`);
-  }
+  return new Promise((resolve, reject) => {
+    const pdfParser = new PDFParser();
+    
+    pdfParser.on('pdfParser_dataError', (errData) => {
+      console.error('PDF parsing error:', errData.parserError);
+      reject(new Error(`Failed to parse PDF: ${errData.parserError}`));
+    });
+    
+    pdfParser.on('pdfParser_dataReady', (pdfData) => {
+      try {
+        // Extract text from all pages
+        let fullText = '';
+        if (pdfData.Pages) {
+          pdfData.Pages.forEach(page => {
+            if (page.Texts) {
+              page.Texts.forEach(text => {
+                if (text.R) {
+                  text.R.forEach(r => {
+                    if (r.T) {
+                      fullText += decodeURIComponent(r.T) + ' ';
+                    }
+                  });
+                }
+              });
+              fullText += '\n';
+            }
+          });
+        }
+        console.log('PDF extraction successful, length:', fullText.length);
+        resolve(fullText.trim());
+      } catch (error) {
+        console.error('Text extraction error:', error);
+        reject(new Error(`Failed to extract text: ${error.message}`));
+      }
+    });
+    
+    pdfParser.parseBuffer(buffer);
+  });
 }
 
 /**

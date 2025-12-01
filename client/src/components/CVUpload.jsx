@@ -11,7 +11,7 @@ const CVUpload = ({ onCVUploaded }) => {
     e.preventDefault();
     
     if (!cvText.trim() && !selectedFile) {
-      setMessage({ type: 'error', text: 'Please enter your CV text or upload a PDF/TXT file' });
+      setMessage({ type: 'error', text: 'Please enter your CV text or upload a TXT file' });
       return;
     }
 
@@ -57,32 +57,20 @@ const CVUpload = ({ onCVUploaded }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      // Validate file type
-      if (file.type === 'application/pdf' || file.type === 'text/plain') {
-        setSelectedFile(file);
-        setCvText(''); // Clear text input when file is selected
-        setMessage({ 
-          type: 'info', 
-          text: `Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)` 
+      const validTypes = ['application/pdf', 'text/plain'];
+      if (!validTypes.includes(file.type)) {
+        setMessage({
+          type: 'error',
+          text: 'Please upload a PDF or TXT file'
         });
-      } else {
-        setMessage({ 
-          type: 'error', 
-          text: 'Please select a PDF or TXT file' 
-        });
+        return;
       }
-    }
-  };
-
-  const handleTextFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file && file.type === 'text/plain') {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setCvText(event.target.result);
-        setSelectedFile(null);
-      };
-      reader.readAsText(file);
+      setSelectedFile(file);
+      setCvText(''); // Clear text input when file is selected
+      setMessage({ 
+        type: 'info', 
+        text: `Selected: ${file.name} (${(file.size / 1024).toFixed(2)} KB)` 
+      });
     }
   };
 
@@ -131,6 +119,7 @@ const CVUpload = ({ onCVUploaded }) => {
           </label>
           <input
             type="file"
+            id="cvFile"
             accept=".pdf,.txt"
             onChange={handleFileChange}
             style={{
@@ -166,12 +155,10 @@ const CVUpload = ({ onCVUploaded }) => {
           {loading ? (
             <>
               <span className="spinner"></span>
-              {selectedFile ? 'Processing PDF...' : 'Uploading...'}
+              Uploading...
             </>
           ) : (
-            <>
-              {selectedFile ? '📤 Upload PDF' : '📤 Upload CV'}
-            </>
+            '📤 Upload CV'
           )}
         </button>
       </form>
@@ -184,7 +171,8 @@ const CVUpload = ({ onCVUploaded }) => {
         fontSize: '0.85rem',
         color: 'var(--text-secondary)'
       }}>
-        💡 <strong>Tip:</strong> PDF files will be automatically parsed. No character limit!
+        💡 <strong>Tip:</strong> Paste your CV text above or upload a PDF/TXT file for best results.
+        The more detailed your CV, the better the job matching accuracy.
       </div>
     </div>
   );
