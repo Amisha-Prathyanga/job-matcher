@@ -65,9 +65,11 @@ function App() {
         text: `Matched ${response.data.data.matchedJobs} jobs with your CV!`
       });
     } catch (error) {
+      console.error('Match error:', error);
+      const errorMsg = error.response?.data?.error || error.message || 'Failed to match jobs';
       setMessage({
         type: 'error',
-        text: error.response?.data?.error || 'Failed to match jobs'
+        text: typeof errorMsg === 'object' ? JSON.stringify(errorMsg) : String(errorMsg)
       });
     } finally {
       setLoading(false);

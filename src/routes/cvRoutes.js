@@ -1,18 +1,3 @@
-/**
- * CV Routes
- * Handles CV upload and management
- */
-
-import express from 'express';
-import { cleanCVText, validateCV, extractSkills } from '../services/cvService.js';
-import fs from 'fs/promises';
-import path from 'path';
- * Upload CV text or file (PDF/TXT)
- */
-router.post('/', upload.single('cvFile'), async (req, res) => {
-  try {
-    let cvText = req.body.cvText;
-
     // If a file was uploaded, extract text from it
     if (req.file) {
       console.log(`Processing uploaded file: ${req.file.originalname} (${req.file.mimetype})`);
