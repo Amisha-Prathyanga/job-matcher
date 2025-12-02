@@ -229,4 +229,54 @@ router.post('/search-and-match', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/generate-cover-letter
+ * Generate a cover letter for a specific job
+ * Body: { job, cvText }
+ */
+router.post('/generate-cover-letter', async (req, res) => {
+  try {
+    const { job, cvText } = req.body;
+
+    if (!job || !job.title || !job.company) {
+      return res.status(400).json({
+        success: false,
+        error: 'Job details (title and company) are required'
+      });
+    }
+
+    if (!cvText) {
+      return res.status(400).json({
+        success: false,
+        error: 'CV text is required'
+      });
+    }
+
+    console.log(`Generating cover letter for ${job.title} at ${job.company}...`);
+
+    // Import the cover letter service
+    const { generateCoverLetter } = await import('../services/coverLetterService.js');
+    
+    // Generate the cover letter
+    const coverLetter = await generateCoverLetter(cvText, job);
+
+    res.json({
+      success: true,
+      data: {
+        coverLetter,
+        job: {
+          title: job.title,
+          company: job.company
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Error generating cover letter:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to generate cover letter'
+    });
+  }
+});
+
 export default router;

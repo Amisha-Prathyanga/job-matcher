@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import CoverLetterModal from './CoverLetterModal';
 
-const ResultsTable = ({ jobs, onMatch }) => {
+const ResultsTable = ({ jobs, onMatch, cvText }) => {
   const [sortedJobs, setSortedJobs] = useState([]);
   const [sortBy, setSortBy] = useState('matchScore');
   const [sortOrder, setSortOrder] = useState('desc');
   const [expandedRows, setExpandedRows] = useState({});
+  const [showCoverLetterModal, setShowCoverLetterModal] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
 
   useEffect(() => {
     if (jobs && jobs.length > 0) {
@@ -17,6 +20,11 @@ const ResultsTable = ({ jobs, onMatch }) => {
       ...prev,
       [jobId]: !prev[jobId]
     }));
+  };
+
+  const handleGenerateCoverLetter = (job) => {
+    setSelectedJob(job);
+    setShowCoverLetterModal(true);
   };
 
   const sortJobs = (jobList, field, order) => {
@@ -182,6 +190,15 @@ const ResultsTable = ({ jobs, onMatch }) => {
                           Apply
                         </a>
                       ) : null}
+                      
+                      <button
+                        className="btn btn-secondary"
+                        onClick={() => handleGenerateCoverLetter(job)}
+                        style={{ padding: '6px 12px', fontSize: '0.8rem' }}
+                        title="Generate AI Cover Letter"
+                      >
+                        📝 Cover Letter
+                      </button>
                       
                       {job.cvSuggestions && (
                         <button

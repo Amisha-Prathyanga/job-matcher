@@ -141,7 +141,11 @@ function App() {
           </p>
         </div>
       ) : (
-        <ResultsTable jobs={jobs} onMatch={jobs.length > 0 && !jobs[0]?.matchScore ? handleMatch : null} />
+        <ResultsTable 
+          jobs={jobs} 
+          onMatch={jobs.length > 0 && !jobs[0]?.matchScore ? handleMatch : null}
+          cvText={cvData?.text || localStorage.getItem('cvText')}
+        />
       )}
 
       {/* Footer */}
