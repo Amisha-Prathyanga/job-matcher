@@ -33,6 +33,10 @@ const CVUpload = ({ onCVUploaded }) => {
         },
       });
       
+      console.log('CV Upload Response:', response.data);
+      console.log('CV Text in response:', response.data.data.text ? 'YES' : 'NO');
+      console.log('CV Text length:', response.data.data.text?.length || 0);
+      
       setMessage({ 
         type: 'success', 
         text: response.data.message + ` Found ${response.data.data.skills.length} skills.` 
@@ -41,6 +45,9 @@ const CVUpload = ({ onCVUploaded }) => {
       // Store CV text in localStorage for persistence
       if (response.data.data.text) {
         localStorage.setItem('cvText', response.data.data.text);
+        console.log('CV Text stored in localStorage');
+      } else {
+        console.error('CV Text NOT in response!');
       }
       
       if (onCVUploaded) {

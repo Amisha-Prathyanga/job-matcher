@@ -23,6 +23,10 @@ const ResultsTable = ({ jobs, onMatch, cvText }) => {
   };
 
   const handleGenerateCoverLetter = (job) => {
+    console.log('Cover letter button clicked!');
+    console.log('Job:', job);
+    console.log('CV Text available:', !!cvText);
+    console.log('CV Text length:', cvText?.length || 0);
     setSelectedJob(job);
     setShowCoverLetterModal(true);
   };
@@ -286,8 +290,17 @@ const ResultsTable = ({ jobs, onMatch, cvText }) => {
           💡 Jobs are sorted by match score. Click "Insights" to see how to improve your CV for specific roles.
         </div>
       )}
+
+      {showCoverLetterModal && selectedJob && cvText && (
+        <CoverLetterModal
+          job={selectedJob}
+          cvText={cvText}
+          onClose={() => setShowCoverLetterModal(false)}
+        />
+      )}
     </div>
   );
 };
 
 export default ResultsTable;
+

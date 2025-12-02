@@ -144,6 +144,7 @@ router.post('/', upload.single('cvFile'), async (req, res) => {
         ? `CV file "${req.file.originalname}" uploaded successfully` 
         : 'CV uploaded successfully',
       data: {
+        text: cleanedCV, // Include the CV text for frontend storage
         skills: skills,
         length: cleanedCV.length,
         uploadedAt: storedCV.uploadedAt,
