@@ -10,6 +10,32 @@ const openai = new OpenAI({
 });
 
 /**
+ * Generate a demo/template cover letter (fallback when OpenAI fails)
+ */
+function generateDemoCoverLetter(cvText, job) {
+  const matchedSkills = job.matchedSkills?.join(', ') || 'relevant technical skills';
+  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  
+  return `Dear Hiring Manager,
+
+I am writing to express my strong interest in the ${job.title} position at ${job.company}. With my background in software development and proven expertise in ${matchedSkills}, I am confident that I would be a valuable addition to your team.
+
+Throughout my career, I have developed a strong foundation in modern web technologies and best practices. My experience aligns well with the requirements outlined in your job posting, particularly in areas such as ${matchedSkills}. I am passionate about creating efficient, scalable solutions and staying current with emerging technologies.
+
+What excites me most about this opportunity at ${job.company} is the chance to contribute to innovative projects while continuing to grow professionally. I am particularly drawn to your company's commitment to excellence and the collaborative environment you foster.
+
+I am eager to bring my technical skills, problem-solving abilities, and enthusiasm to your team. I would welcome the opportunity to discuss how my background and skills would benefit ${job.company}.
+
+Thank you for considering my application. I look forward to the possibility of contributing to your team's success.
+
+Sincerely,
+[Your Name]
+
+---
+Note: This is a demo cover letter. For personalized AI-generated letters, please add OpenAI API credits.`;
+}
+
+/**
  * Generate a personalized cover letter for a job application
  * @param {string} cvText - The user's CV text
  * @param {object} job - The job object with title, company, description, etc.
@@ -70,6 +96,13 @@ Generate the cover letter now:`;
     return coverLetter;
   } catch (error) {
     console.error('Error generating cover letter:', error);
+    
+    // If OpenAI fails (quota, API key, etc.), use demo mode
+    if (error.status === 429 || error.code === 'insufficient_quota' || error.message?.includes('quota')) {
+      console.log('OpenAI quota exceeded, using demo mode...');
+      return generateDemoCoverLetter(cvText, job);
+    }
+    
     throw new Error(`Failed to generate cover letter: ${error.message}`);
   }
 }
